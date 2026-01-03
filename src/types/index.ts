@@ -68,3 +68,23 @@ export type ReadonlyDeep<T> = T extends object
 export type Prettyfi<T> = {
   [K in keyof T]: T[K];
 } & {};
+
+/**
+ * Tipo que permite o valor T ou undefined em contexto que o null nao é usado
+ *
+ * @template T - Tipo original
+ * @example
+ * type UserData = Maybe<string>; // string | undefined
+ */
+export type Maybe<T> = T | undefined;
+
+/**
+ * Combina T com null e undefined.
+ *
+ * Representa valores que podem estar ausentes de qualquer forma.
+ *
+ * @template T - Tipo original permitido.
+ * @example
+ * type OptionalString = Optional<string>; // string | null | undefined
+ */
+export type Optional<T> = T | undefined | null;
