@@ -88,3 +88,20 @@ export type Maybe<T> = T | undefined;
  * type OptionalString = Optional<string>; // string | null | undefined
  */
 export type Optional<T> = T | undefined | null;
+
+/**
+ * Seleciona apenas as propriedades de T cujo tipo estende U.
+ *
+ * Use quando quiser filtrar um tipo para conter apenas propriedades
+ * de um tipo específico (ex: apenas strings, apenas números, etc).
+ *
+ * @template T - Tipo original.
+ * @template U - Tipo usado como filtro para selecionar propriedades.
+ * @example
+ * type User = { name: string; age: number; active: boolean };
+ * type StringProps = PickByType<User, string>; // { name: string }
+ * type NumberProps = PickByType<User, number>; // { age: number }
+ */
+export type PickByType<T, U> = {
+  [K in keyof T as T[K] extends U ? K : never]: T[K];
+};
