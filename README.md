@@ -137,6 +137,70 @@ type Clean = Prettyfi<A & B>
 // Resultado: { a: number; b: string }
 ```
 
+#### PickByType<T, U>
+Seleciona apenas as propriedades de T cujo tipo estende U.
+
+```typescript
+import { PickByType } from './types'
+
+interface Product {
+  id: number
+  name: string
+  description: string
+  price: number
+  inStock: boolean
+  tags: string[]
+}
+
+// Pegar apenas propriedades string
+type ProductStrings = PickByType<Product, string>
+// Resultado: { name: string; description: string }
+
+// Pegar apenas propriedades number
+type ProductNumbers = PickByType<Product, number>
+// Resultado: { id: number; price: number }
+
+// Útil para criar DTOs específicos
+function createProductLabel(data: ProductStrings) {
+  return `${data.name}: ${data.description}`
+}
+
+// Extrair apenas campos numéricos para cálculos
+function calculateDiscount(data: ProductNumbers) {
+  return data.price * 0.1
+}
+```
+
+#### OmitByType<T, U>
+Remove as propriedades de T cujo tipo estende U.
+
+```typescript
+import { OmitByType } from './types'
+
+interface Product {
+  id: number
+  name: string
+  description: string
+  price: number
+  inStock: boolean
+  tags: string[]
+}
+
+// Remover todas as propriedades number
+type ProductWithoutNumbers = OmitByType<Product, number>
+// Resultado: { name: string; description: string; inStock: boolean; tags: string[] }
+
+// Remover todas as propriedades string
+type ProductWithoutStrings = OmitByType<Product, string>
+// Resultado: { id: number; price: number; inStock: boolean; tags: string[] }
+
+// Criar DTO público sem IDs numéricos sensíveis
+function toPublicProduct(product: Product): OmitByType<Product, number> {
+  const { id, price, ...rest } = product
+  return rest
+}
+```
+
 ### 🎨 Decorators
 
 Localização: `src/decorators/index.ts`
@@ -271,11 +335,11 @@ type-utilities-lib/
 - [x] Configuração ESLint/Prettier
 
 ### 🚧 Fase 2: Expansão (EM PROGRESSO)
-- [ ] **Tipos Adicionais:**
-  - [ ] `Maybe<T>` (T | undefined)
-  - [ ] `Optional<T>` (T | null | undefined)
-  - [ ] `PickByType<T, U>` (extrair props por tipo)
-  - [ ] `OmitByType<T, U>` (omitir props por tipo)
+- [x] **Tipos Adicionais:**
+  - [x] `Maybe<T>` (T | undefined)
+  - [x] `Optional<T>` (T | null | undefined)
+  - [x] `PickByType<T, U>` (extrair props por tipo)
+  - [x] `OmitByType<T, U>` (omitir props por tipo)
 
 - [ ] **Decorators Adicionais:**
   - [ ] `@Cache(ttl)` - cachear resultados
