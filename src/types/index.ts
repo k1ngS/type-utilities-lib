@@ -105,3 +105,20 @@ export type Optional<T> = T | undefined | null;
 export type PickByType<T, U> = {
   [K in keyof T as T[K] extends U ? K : never]: T[K];
 };
+
+/**
+ * Remove as propriedades de T cujo tipo estende U.
+ *
+ * Use quando quiser excluir propriedades de um tipo específico
+ * (ex: remover todas as strings, números, funções, etc).
+ *
+ * @template T - Tipo original.
+ * @template U - Tipo usado como filtro para remover propriedades.
+ * @example
+ * type User = { name: string; age: number; active: boolean };
+ * type NoStrings = OmitByType<User, string>; // { age: number; active: boolean }
+ * type NoNumbers = OmitByType<User, number>; // { name: string; active: boolean }
+ */
+export type OmitByType<T, U> = {
+  [K in keyof T as T[K] extends U ? never : K]: T[K];
+};
