@@ -40,3 +40,24 @@ export function MeasureTime() {
     return descriptor;
   };
 }
+
+/** */
+export function Cache(ttl: number) {
+  const cache = new Map(); // Um cache compartilhado
+
+  return function (target: any, key: string, descriptor: PropertyDescriptor) {
+    const original = descriptor.value;
+
+    descriptor.value = function (...args: any[]) {
+      const chaveCache = JSON.stringify(args); // Serializa argumentos
+
+      if (cache.has(chaveCache)) {
+        return cache.get(chaveCache); // Retorna do cache
+      }
+
+      const resultado = original.apply(this, args);
+      cache.set(chaveCache, resultado);
+      return resultado;
+    };
+  };
+}
