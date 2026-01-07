@@ -83,3 +83,26 @@ export function Cache(ttl: number) {
     };
   };
 }
+
+export function Log() {
+  return function (
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    const metodoOriginal = descriptor.value; // Guarda a função original
+
+    descriptor.value = function (...args: any[]) {
+      // ANTES: codigo chamando o metodo
+      console.log(`Chamando ${propertyKey} com:`, args);
+
+      // DURANTE: chama o método original
+      const resultado = metodoOriginal.apply(this, args);
+
+      // DEPOIS: mostra o resultado
+      console.log(`Resultado:`, resultado);
+
+      return resultado;
+    };
+  };
+}
