@@ -84,25 +84,79 @@ export function Cache(ttl: number) {
   };
 }
 
-export function Log() {
+type LogLevel = "debug" | "info" | "warn" | "error";
+
+interface LogData {
+  method: string;
+  args: any[];
+  result?: any;
+  error?: any;
+  duration: number;
+  level: LogLevel;
+}
+
+interface LogOptions {
+  level?: LogLevel;
+  disabled?: boolean;
+  formatter?: (data: LogData) => string;
+}
+
+export function Log(options: LogOptions = {}) {
+  const {
+    level = "info",
+    disabled = process.env.NODE_ENV === "production",
+    formatter,
+  } = options;
+
   return function (
     target: any,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
+    if (disabled) return descriptor;
+
     const metodoOriginal = descriptor.value; // Guarda a função original
+    const logMethod = console[level] || console.log;
 
-    descriptor.value = function (...args: any[]) {
-      // ANTES: codigo chamando o metodo
-      console.log(`Chamando ${propertyKey} com:`, args);
+    descriptor.value = async function (...args: any[]) {
+      const start = Date.now();
 
-      // DURANTE: chama o método original
-      const resultado = metodoOriginal.apply(this, args);
+      try {
+        const result = await metodoOriginal.apply(this, args);
+        const duration = Date.now() - start;
 
-      // DEPOIS: mostra o resultado
-      console.log(`Resultado:`, resultado);
+        const logData: LogData = {
+          method: propertyKey,
+          args,
+          result,
+          duration,
+          level,
+        };
 
-      return resultado;
+        const message = formatter
+          ? formatter(logData)
+          : `[${level.toUpperCase()}] ${propertyKey}(${JSON.stringify(args)})  →  ${JSON.stringify(result)} (${duration}ms)`;
+
+        logMethod(message);
+        return result;
+      } catch (error) {
+        const duration = Date.now() - start;
+
+        const logData: LogData = {
+          method: propertyKey,
+          args,
+          error,
+          duration,
+          level: "error",
+        };
+
+        const message = formatter
+          ? formatter(logData)
+          : `[ERROR] ${propertyKey} falhou após ${duration}ms`;
+
+        console.error(message, error);
+        throw error;
+      }
     };
   };
 }
