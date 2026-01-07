@@ -41,22 +41,44 @@ export function MeasureTime() {
   };
 }
 
-/** */
+/**
+ * Decorator que cacheia o resultado de métodos, retornando valores armazenados
+ * em chamadas subsequentes com os mesmos argumentos até o TTL expirar.
+ *
+ * @param ttl - Tempo de vida do cache em milissegundos (ex: 5000 = 5 segundos)
+ *
+ * @example
+ * class UserService {
+ *    @Cache(60000) // Cacheia por 1 minuto
+ *    async buscarUsuario(id: number) {
+ *      return fetch(`/api/users/${id}`)
+ *  }
+ * }
+ *
+ * @returns {(target: any, propertyKey: string, descriptor: PropertyDescriptor) => void}
+ */
 export function Cache(ttl: number) {
-  const cache = new Map(); // Um cache compartilhado
+  const cache = new Map<string, { valor: any; expira: number }>(); // Um cache compartilhado
 
   return function (target: any, key: string, descriptor: PropertyDescriptor) {
     const original = descriptor.value;
 
     descriptor.value = function (...args: any[]) {
-      const chaveCache = JSON.stringify(args); // Serializa argumentos
+      const chaveCache = `${key}:${JSON.stringify(args)}`; // Serializa argumentos
 
       if (cache.has(chaveCache)) {
-        return cache.get(chaveCache); // Retorna do cache
+        const item = cache.get(chaveCache);
+        if (item && Date.now() < item.expira) {
+          return item.valor;
+        }
+        cache.delete(chaveCache); // Limpa expirado
       }
 
       const resultado = original.apply(this, args);
-      cache.set(chaveCache, resultado);
+      cache.set(chaveCache, {
+        valor: resultado,
+        expira: Date.now() + ttl,
+      });
       return resultado;
     };
   };
